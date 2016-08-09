@@ -1,6 +1,4 @@
 package com.forex.predicter.model;
-
-import com.forex.predicter.repository.CustomCandelstickRepository;
 import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;

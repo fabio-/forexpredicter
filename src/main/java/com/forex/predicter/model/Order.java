@@ -4,31 +4,15 @@ import java.time.LocalDateTime;
 
 public class Order
 {
-    private LocalDateTime enterTradeTime;
-
-    private LocalDateTime exitTradeTime;
-
-    private Double pipsDifference;
-
-    private Position position;
-
-    private Double stopLoss;
-
-    private Double takeProfit;
-
-    public Order(LocalDateTime enterTradeTime, Position position, Double stopLoss, Double takeProfit) {
-        this.enterTradeTime = enterTradeTime;
-        this.position = position;
-        this.stopLoss = stopLoss;
-        this.takeProfit = takeProfit;
-    }
+    protected LocalDateTime enterTradeTime;
+    protected Double enterTradePrice;
+    protected Frequency tradingFrequency;
+    protected Position position;
+    protected Double stopLoss;
+    protected Double takeProfit;
 
     public Order(Position position) {
         this.position = position;
-    }
-
-    public Order() {
-        this.position = Position.NO_ACTION;
     }
 
     public LocalDateTime getEnterTradeTime() {
@@ -39,20 +23,20 @@ public class Order
         this.enterTradeTime = enterTradeTime;
     }
 
-    public LocalDateTime getExitTradeTime() {
-        return exitTradeTime;
+    public Double getEnterTradePrice() {
+        return enterTradePrice;
     }
 
-    public void setExitTradeTime(LocalDateTime exitTradeTime) {
-        this.exitTradeTime = exitTradeTime;
+    public void setEnterTradePrice(Double enterTradePrice) {
+        this.enterTradePrice = enterTradePrice;
     }
 
-    public Double getPipsDifference() {
-        return pipsDifference;
+    public Frequency getTradingFrequency() {
+        return tradingFrequency;
     }
 
-    public void setPipsDifference(Double pipsDifference) {
-        this.pipsDifference = pipsDifference;
+    public void setTradingFrequency(Frequency tradingFrequency) {
+        this.tradingFrequency = tradingFrequency;
     }
 
     public void setPosition(Position position) {

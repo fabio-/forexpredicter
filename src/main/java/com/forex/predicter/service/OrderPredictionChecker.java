@@ -1,7 +1,8 @@
 package com.forex.predicter.service;
 
 import com.forex.predicter.model.Order;
-import com.forex.predicter.repository.CandelstickRepository;
+import com.forex.predicter.model.OrderOutcome;
+import com.forex.predicter.repository.CandlestickRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,10 +10,10 @@ import org.springframework.stereotype.Service;
 public class OrderPredictionChecker
 {
     @Autowired
-    private CandelstickRepository candelstickRepository;
+    private CandlestickRepository candlestickRepository;
 
-    public boolean checkOrder(Order order)
+    public OrderOutcome checkOrder(Order order)
     {
-           return true;
+        return candlestickRepository.getPredictionOutcome(order);
     }
 }

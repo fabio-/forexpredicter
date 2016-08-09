@@ -1,7 +1,7 @@
 package com.forex.predicter.logic;
 
 import com.forex.predicter.model.*;
-import com.forex.predicter.repository.CandelstickRepository;
+import com.forex.predicter.repository.CandlestickRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,13 +16,16 @@ import java.util.stream.Collectors;
 public class Predicter
 {
     @Autowired
-    private CandelstickRepository repository;
+    private CandlestickRepository repository;
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DataSetImporter.class);
 
-    public Order predict(Candlestick candlestick)
+    private final Frequency tradingFrequency = Frequency.m15;
+
+    public OrderOutcome predict(Candlestick candlestick)
     {
-        Order result = new Order();
+        OrderOutcome result = new OrderOutcome(Position.NO_ACTION);
+        result.setTradingFrequency(tradingFrequency);
         ValueArea valueArea = calculateValueArea(candlestick);
 
         if (!isInValueArea(candlestick, valueArea)) {
@@ -37,21 +40,31 @@ public class Predicter
             }
         }
 
-
         Double candlestickLevel = candlestick.getClose() - valueArea.getMin().getClose();
         Double percent100 = valueArea.getMax().getClose() - valueArea.getMin().getClose();
 
-        Double howCloseToborderLines = candlestickLevel/percent100;
+        Double howCloseToBorderLines = candlestickLevel/percent100;
 
-        if (howCloseToborderLines < 0.2) {
+        Double maxGain = valueArea.getMax().getClose() - candlestick.getClose();
+        Double maxLoss = valueArea.getMin().getClose() - candlestick.getClose();
+        Double stopLoss=0d;
+        Double takeProfit=0d;
+
+        if (howCloseToBorderLines < 0.2) {
             result.setPosition(Position.LONG);
-        } else if (howCloseToborderLines > 0.8) {
+            stopLoss = candlestick.getClose() - maxGain*0.4;
+            takeProfit = valueArea.getMax().getClose();
+        } else if (howCloseToBorderLines > 0.8) {
             result.setPosition(Position.SHORT);
+            stopLoss = valueArea.getMin().getClose();
+            takeProfit = candlestick.getClose() - maxLoss*0.4;
         }
 
         result.setEnterTradeTime(candlestick.getTime());
-        result.setTakeProfit(valueArea.getMax().getClose());
-        result.setStopLoss(valueArea.getMin().getClose());
+        result.setEnterTradePrice(candlestick.getClose());
+
+        result.setTakeProfit(takeProfit);
+        result.setStopLoss(stopLoss);
 
         return result;
     }
@@ -64,8 +77,6 @@ public class Predicter
 
     public ValueArea calculateValueArea(Candlestick candlestick)
     {
-        Candlestick daily = repository.getByTime(candlestick.getTime().minusDays(1),Frequency.DAILY);
-
         List<Candlestick> values = repository.getByTime(candlestick.getTime().minusDays(1), candlestick.getTime(), Frequency.HOURLY);
 
         Double sum = values.stream().mapToDouble(Candlestick::getVolume).sum();

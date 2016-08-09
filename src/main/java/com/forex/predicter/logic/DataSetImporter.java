@@ -6,7 +6,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.forex.predicter.model.Candlestick;
 import com.forex.predicter.model.CurrencyPair;
 import com.forex.predicter.model.Frequency;
-import com.forex.predicter.repository.CandelstickRepository;
+import com.forex.predicter.repository.CandlestickRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class DataSetImporter
     private static final Logger logger = LoggerFactory.getLogger(DataSetImporter.class);
 
     @Autowired
-    private CandelstickRepository candelstickRepository;
+    private CandlestickRepository candlestickRepository;
 
     public void importData(Resource resource, CurrencyPair currencyPair, Frequency frequency) {
         try {
@@ -36,7 +36,7 @@ public class DataSetImporter
             it.next();
             while (it.hasNext()) {
                 Object[] row = it.next();
-                candelstickRepository.save(new Candlestick(currencyPair, frequency, row));
+                candlestickRepository.save(new Candlestick(currencyPair, frequency, row));
             }
 
         } catch (IOException e) {

@@ -2,7 +2,9 @@ package com.forex.predicter.config;
 
 import com.forex.predicter.logic.DataSetImporter;
 import com.forex.predicter.model.CurrencyPair;
+import com.forex.predicter.model.DataFile;
 import com.forex.predicter.model.Frequency;
+import com.forex.predicter.repository.DataFileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,21 +34,33 @@ public class DataSetConfig
     @Autowired
     private DataSetImporter dataSetImporter;
 
+    @Autowired
+    private DataFileRepository dataFileRepository;
+
+    /**
+     * Curtesy of: https://www.dukascopy.com/plugins/fxMarketWatch/?historical_data
+     */
     @PostConstruct
     public void loadDataSet()
     {
         LocalDateTime start = LocalDateTime.now();
 
         logger.info("Start importing data at: + "+LocalDateTime.now().toString());
-        dataSetImporter.importData(usdChfResourceM15, CurrencyPair.USD_CHF, Frequency.m15);
-        logger.info("Start import USD_CHF h1 + "+LocalDateTime.now().toString());
-        dataSetImporter.importData(usdChfResource1H, CurrencyPair.USD_CHF, Frequency.HOURLY);
-        logger.info("Start import USD_CHF m15 + "+LocalDateTime.now().toString());
-        dataSetImporter.importData(usdChfResource1D, CurrencyPair.USD_CHF, Frequency.DAILY);
-        logger.info("Start import USD_CHF d1 "+LocalDateTime.now().toString());
+        importData(usdChfResourceM15, CurrencyPair.USD_CHF, Frequency.m15);
+        importData(usdChfResource1H, CurrencyPair.USD_CHF, Frequency.HOURLY);
+        importData(usdChfResource1D, CurrencyPair.USD_CHF, Frequency.DAILY);
         LocalDateTime end = LocalDateTime.now();
         logger.info("Done. Total time taken: "+start.toString()+" - "+end.toString());
     }
 
-
+    private void importData(Resource resource, CurrencyPair currencyPair, Frequency frequency)
+    {
+        if (dataFileRepository.findByFilename(resource.getFilename()) != null) {
+            logger.info("Skipping already imported file: "+resource.getFilename());
+        } else {
+            logger.info("Start import of file: "+resource.getFilename()+" at "+LocalDateTime.now().toString());
+            dataSetImporter.importData(resource, currencyPair, frequency);
+            dataFileRepository.save(new DataFile(resource.getFilename()));
+        }
+    }
 }
